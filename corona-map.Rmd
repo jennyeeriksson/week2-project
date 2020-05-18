@@ -17,15 +17,15 @@ download.file("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/
 }
 data<-read.csv("corona.csv")
 ```
-The following map shows the number of reported deaths per country, up until 2020-05-18. Click the circle to get the number.
+The following map shows the number of reported confirmed cases and deaths per country, up until 2020-05-18. Click the circle to get the number.
 ```{r, include=FALSE}
 library(dplyr)
 names(data)[6]<-"lat"
 names(data)[7]<-"lng"
-deaths<-data %>% group_by(Country_Region) %>% summarize(tot_death=sum(na.omit(Deaths)), lat=na.omit(lat)[1], lng=na.omit(lng)[1])
+deaths<-data %>% group_by(Country_Region) %>% summarize(tot_death=sum(na.omit(Deaths)), tot_cases=sum(na.omit(Confirmed)), lat=na.omit(lat)[1], lng=na.omit(lng)[1])
 deaths<-deaths[complete.cases(deaths), ]
 
-deaths$hover <- with(deaths, paste("#Deaths: ", tot_death))
+deaths$hover <- with(deaths, paste(sep = "<br/>", "Deaths: ", tot_death, "Disease: ", tot_cases))
 
 
 ```
@@ -33,7 +33,6 @@ deaths$hover <- with(deaths, paste("#Deaths: ", tot_death))
 
 ```{r, echo=F}
 library(htmltools)
-deaths %>% leaflet() %>% addTiles() %>% addCircles(~lng, ~lat,weight=1, radius=deaths$tot_death*10, popup=~htmlEscape(deaths$hover))
-
-
+deaths %>% leaflet() %>% addTiles() %>% addCircles(~lng, ~lat,weight=1, radius=deaths$tot_death*15, popup=~deaths$hover)
 ```
+
