@@ -1,0 +1,39 @@
+---
+title: "Corona map"
+author: "Jenny Eriksson"
+date: '2020-05-18'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(leaflet)
+```
+
+```{r, include=FALSE}
+if(!file.exists("corona.csv"))
+{
+download.file("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/05-17-2020.csv", "corona.csv")
+}
+data<-read.csv("corona.csv")
+```
+The following map shows the number of reported deaths per country, up until 2020-05-18. Click the circle to get the number.
+```{r, include=FALSE}
+library(dplyr)
+names(data)[6]<-"lat"
+names(data)[7]<-"lng"
+deaths<-data %>% group_by(Country_Region) %>% summarize(tot_death=sum(na.omit(Deaths)), lat=na.omit(lat)[1], lng=na.omit(lng)[1])
+deaths<-deaths[complete.cases(deaths), ]
+
+deaths$hover <- with(deaths, paste("#Deaths: ", tot_death))
+
+
+```
+
+
+```{r, echo=F}
+library(htmltools)
+deaths %>% leaflet() %>% addTiles() %>% addCircles(~lng, ~lat,weight=1, radius=deaths$tot_death*10, popup=~htmlEscape(deaths$hover))
+
+
+```
